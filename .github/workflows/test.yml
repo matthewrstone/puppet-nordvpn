@@ -1,0 +1,57 @@
+name: Puppet Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  spec:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ruby: ['3.1', '3.2']
+        puppet: ['7', '8']
+    name: Ruby ${{ matrix.ruby }} / Puppet ${{ matrix.puppet }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+
+      - name: Run spec tests
+        run: bundle exec rake spec
+        env:
+          PUPPET_GEM_VERSION: "~> ${{ matrix.puppet }}.0"
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Run puppet-lint
+        run: bundle exec rake lint
+
+  syntax:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Validate syntax
+        run: bundle exec rake validate
